@@ -1,0 +1,40 @@
+/* styles.css */
+
+body {
+    background-image: url('/assets/pictures/maze.jpg'); /* Update the path to the image */
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* styles.css */
+.custom-bg-color {
+    background-color: black; /* Replace with your desired background color */
+    color: white; /* Optional - change text color for better visibility */
+    opacity: 0.9;
+}
+.table-header {
+    position: sticky;
+    top: 0;
+    background-color: black; /* You can adjust the background color as needed */
+    z-index: 2; /* Ensure the header appears above the table */
+    opacity: 1;
+}
+
+.myTable {
+    position: sticky;
+    top: 2px; /* Adjust this value to create space for the header */
+    z-index: 1; /* Ensure the table appears below the header */
+    opacity: 1;
+}
+/* Custom styles for the active pill buttons */
+.nav-item.active {
+    background-color: rgb(255, 0, 0); /* Set your desired background color */
+    color: white; /* Set the text color for active state */
+}
+
+/* Custom styles for the hover effect on pill buttons */
+.nav-item:hover .nav-link {
+    background-color: red; /* Set your desired hover background color */
+    color: white; /* Set the text color for hover state */
+}
+
