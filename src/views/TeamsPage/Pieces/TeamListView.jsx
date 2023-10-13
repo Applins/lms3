@@ -1,5 +1,5 @@
 // TeamListView.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import TeamsTable from '../Pieces/Table/TeamTable';
 import AlertList from '../Pieces/Alerts/AlertList'; // Import the updated AlertList component
 import Button from 'react-bootstrap/Button';
