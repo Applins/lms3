@@ -66,7 +66,7 @@ function EditTeam({ isCreate, api }) {
     navigate('/teams');
   };
 
-  return (
+  return formData && (
     <Container className="my-5" style={{ backgroundColor: 'white', padding: '20px' }}>
       <h1>{title}</h1>
       <Form className="mb-2" noValidate validated={validated} onSubmit={handleSubmit}>
