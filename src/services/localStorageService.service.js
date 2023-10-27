@@ -40,7 +40,7 @@ class LocalStorageService {
   }
 
   async read(getId) {
-    const item = this.model.data.find(item => item.id == getId);
+    const item = this.model.data.find(item => item.id === getId);
     return item;
 }
 
@@ -152,7 +152,7 @@ class LocalStorageService {
 
   // Utility functions
   getItemIndex(id) {
-    const index = this.model.data.findIndex(item => item.id == id);
+    const index = this.model.data.findIndex(item => item.id === id);
     return index;
   }
 
