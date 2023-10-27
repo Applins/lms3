@@ -5,6 +5,7 @@ import AlertList from '../Pieces/Alerts/AlertList'; // Import the updated AlertL
 import Button from 'react-bootstrap/Button';
 import AddTeamButton from '../Pieces/AddTeamButton'
 import SearchBar from '../Pieces/SearchBar';
+import { useNavigate } from 'react-router-dom';
 
 function TeamListView({ viewModel, api }) {
   const navigate = useNavigate();
