@@ -1,54 +1,50 @@
 class LocalStorageService {
   "use strict";
-  constructor(data, key) {
-    this.origModel = data;
+  constructor(model, key) {
+    this.model = model
+    this.origModel = model;
     this.key = key;
+    this.increment = 100000
 
     // Initialize and sort the data using sortCol and sortDir from the model
     if (!this.retrieve()) {
       // If data is not in local storage, initialize and sort
-      this.model = this.cloneObject(data);
+      this.model.data = this.cloneObject(model.data);
       this.sort(this.sortCol, this.sortDir, true); // Apply default sort
     }
   }
 
   // Getters and setters
-  get sortCol() {
-    return this.model.app ? this.model.app.sortCol : 'defaultCol';
-  }
-
-  set sortCol(col) {
-    if (this.model.app) {
-      this.model.app.sortCol = col;
-    }
-  }
-
+  get sortCol(){
+    return this.origModel.options.sortCol;
+ }
+ set sortCol(col){
+    this.origModel.options.sortCol=col;
+ }
   get sortDir() {
-    return this.model.app ? this.model.app.sortDir : 'asc';
+    return this.origModel.options.sortDir;
   }
-
   set sortDir(dir) {
-    if (this.model.app) {
-      this.model.app.sortDir = dir;
-    }
+    this.origModel.options.sortDir = dir;
   }
+  
 
   get size() {
     return this.model.data.length;
   }
 
   // CRUD FUNCTIONS
-  create(obj) {
+  async create(obj) {
     this.model.data.push(obj);
     this.store();
   }
 
-  read(getId) {
-    const item = this.model.data.find(item => item.id === getId);
+  async read(getId) {
+    const item = this.model.data.find(item => item.id == getId);
     return item;
-  }
+}
 
-  update(obj) {
+  async update(obj) {
     const find = this.getItemIndex(obj.id);
     if (find !== -1) {
       this.model.data[find] = obj;
@@ -56,7 +52,7 @@ class LocalStorageService {
     }
   }
 
-  delete(removeId) {
+  async delete(removeId) {
     const id = this.getItemIndex(removeId);
     if (id !== -1) {
       this.model.data.splice(id, 1);
@@ -101,39 +97,62 @@ class LocalStorageService {
 
   // Sorting and Filtering Functions
   sort(col, direction, perm = false) {
-    
-     const sortedData = this.cloneObject(this.model.data)
-     sortedData.sort((a,b) =>{
-      if(direction === 'asc'){
-        return a[col] < b[col] ? 1: -1
-     }
-     else{
-        return a[col] > b[col] ? 1: -1
-     }
-     });
-     if(perm){
-        this.model.data = sortedData
-        this.sortCol = col
-        this.sortDir = direction
-        this.store()
-     }
-     return sortedData
- }
+    const sortedData = this.cloneObject(this.model.data);
+    sortedData.sort((a, b) => {
+      console.log("Comparing", a[col], b[col]);
+      if (direction === 'desc') {
+        if (a[col] < b[col]) {
+          return 1;
+        } else if (a[col] > b[col]) {
+          return -1;
+        }
+        return 0;
+      } else {
+        if (a[col] < b[col]) {
+          return -1;
+        } else if (a[col] > b[col]) {
+          return 1;
+        }
+        return 0;
+      }
+    });
+    if (perm) {
+      this.model.data = sortedData;
+      this.sortCol = col;
+      this.sortDir = direction;
+      this.store();
+    }
+    return sortedData;
+  }
+  
+  
 
-  filter(filterObj) {
-    return this.model.data.filter(item => {
-      for (const key in filterObj) {
-        if (item[key] !== filterObj[key]) {
+ filter(filterObj) {
+  function filterFunc(team) {
+    for (let key in filterObj) {
+      if (team[key]) {
+        let val1 = team[key].toString().toLowerCase();
+        let val2 = filterObj[key].toString().toLowerCase();
+        if (!val1.includes(val2)) {
           return false;
         }
+      } else {
+        return false;
       }
-      return true;
-    });
+    }
+    return true;
+  }
+  let result = this.model.data.filter(filterFunc);
+  return this.cloneObject(result);
+}
+
+  async getLookup(lookupName){
+    return this.origModel.lookups[lookupName]
   }
 
   // Utility functions
   getItemIndex(id) {
-    const index = this.model.data.findIndex(item => item.id === id);
+    const index = this.model.data.findIndex(item => item.id == id);
     return index;
   }
 
@@ -142,27 +161,23 @@ class LocalStorageService {
     return JSON.parse(JSON.stringify(obj));
   }
   get filterStr(){
+    return this.origModel.entities;
+ }
+ set filterStr(filterStr){
+    this.origModel.entities=filterStr;
+ }
+ 
+ async list() {
+  /* KJ: modified list getter to sort and filter based on current options set in 'app' */
+  this.sort(this.sortCol, this.sortDir, true);
+  if (this.filterStr) {
+    let filterObj = { name: this.filterStr }; // Assuming the filter is based on the 'name' property
+    return this.filter(filterObj);
+  }
+  return this.model.data;   
+}
 
-    return this.model.app.filterStr;
- 
- }
- 
- set fiterStr(filterStr){
- 
-    this.model.app.fiterStr=filterStr;
- }
- 
-list() {
-       /*KJ: modified list getter to sort and filter based on current options set in 'app'*/
-       this.sort(this.sortCol, this.sortDir, true);
-       let filterObj={};
-      
-       if (this.filterStr){
-           filterObj[this.sortCol]=this.filterStr;
-           return this.filter(filterObj);
-       }
-       return this.model.data;
-     }
+
 }
 
 export default LocalStorageService;

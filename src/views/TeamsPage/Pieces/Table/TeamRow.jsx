@@ -4,7 +4,7 @@
   import DeleteButton from '../Table/DeleteButton'; 
   import EditButton from '../Table/EditButton'
 
-  function TeamRow({team, onHandleDelete }) {
+  function TeamRow({team, onHandleDelete, onHandleEdit }) {
     
     let deletePrompt = `Are you sure you want to delete team: ${team.name}`;
 
@@ -32,7 +32,7 @@
             <DeleteButton onDelete={() => onHandleDelete(team.id)}></DeleteButton>
           </td>
           <td>
-            <EditButton></EditButton>
+            <EditButton id={team.id} onEdit={onHandleEdit}></EditButton>
           </td>
         </tr>
       </OverlayTrigger>

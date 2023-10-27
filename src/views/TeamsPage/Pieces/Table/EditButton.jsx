@@ -1,15 +1,17 @@
-import Button from 'react-bootstrap/Button';
+import React from 'react';
+import { Button } from 'react-bootstrap';
 import { FaPenFancy } from 'react-icons/fa';
 
-function DeleteButton({ onDelete }) {
+function EditButton({ id, onEdit }) {
+  const handleNavigate = () => {
+    onEdit(id); // Pass the id to the onEdit function
+  };
 
   return (
-    <>
-      <Button>
-        <FaPenFancy /> {/* Display the trash icon */}
-      </Button>
-    </>
+    <Button onClick={handleNavigate}>
+      <FaPenFancy />
+    </Button>
   );
 }
 
-export default DeleteButton;
+export default EditButton;

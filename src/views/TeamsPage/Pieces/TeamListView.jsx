@@ -1,75 +1,98 @@
 // TeamListView.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
+import { useNavigate } from 'react-router-dom';
 import TeamsTable from '../Pieces/Table/TeamTable';
 import AlertList from '../Pieces/Alerts/AlertList'; // Import the updated AlertList component
 import Button from 'react-bootstrap/Button';
+import AddTeamButton from '../Pieces/AddTeamButton'
+import SearchBar from '../Pieces/SearchBar';
 
-function TeamListView({ viewModel, model }) {
-  // Retrieve team data from localStorage or any other source using the model
-  // State variable for team data
-  const [teamData, setTeamData] = useState(model.list());
-
-  // State variable for alert list
+function TeamListView({ viewModel, api }) {
+  const navigate = useNavigate();
+  const [teamData, setTeamData] = useState([]);  
+  const [sortCol, setSortCol] = useState(api.sortCol)
+  const [sortDir, setSortDir] = useState(api.sortDir) 
+  const [isReset, setIsReset]=useState(false);
   const [alertList, setAlertList] = useState([]);
+  const [filterStr, setFilterStr] = useState(api.filterStr)
+ 
+  useEffect(() => {
+    api.sortCol = sortCol;
+    api.sortDir = sortDir;
+    api.filterStr = filterStr;
+    api.list().then((teams) => {
+        setTeamData(teams);
+    });
+}, [isReset, sortCol, sortDir, filterStr, alertList, api]);
+
 
   // Handler function to delete an item
   function handleDelete(itemId) {
     // Call model to delete the item
-    model.delete(itemId);
-    // Update 'teamData' with the new list
-    const updatedTeamData = teamData.filter((item) => item.id !== itemId);
-    setTeamData(updatedTeamData);
-    addAlert('Item deleted successfully', 'success');
+    api.read(itemId).then((team) =>{
+      api.delete(itemId).then(()=>{
+        addAlert('Item deleted successfully', 'success');
+      });
+    });
   }
+  const onSearchHandler = (value) => {
+    if (value.length > 2) {
+      setFilterStr(value); // Set the filter string to the input value
+      setSortCol('name'); // Set the column to sort by name
+    } else {
+      setFilterStr(''); // Reset the filter string if the input is less than 2 characters
+      setSortCol(api.sortCol); // Reset the column to its original state
+    }
+  };
   
   const handleReset = () => {
     // Call model.reset() to reset data in localStorage
-    model.reset();
+    api.reset();
     // Update 'teamData' with a new list or initial data
-    setTeamData([]);
+    setIsReset(true)
   }
-  function handleSort(colName) {
-    // Check if the clicked column is the same as the current sortCol in the model
-    if (colName === model.sortCol) {
-      // If so, reverse the sort direction (toggle between 'asc' and 'desc')
-      model.sortDir = model.sortDir === 'asc' ? 'desc' : 'asc';
+  function handleSort(newSortCol) {
+    let curDirection = sortDir;
+    if (sortCol === newSortCol) {
+      setSortDir(curDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // If the clicked column is different, set the sortCol to the clicked column and default the sortDir to 'asc'
-      model.sortCol = colName;
-      model.sortDir = 'asc';
+      setSortDir('asc');
     }
-    setTeamData(model.list());
+    setSortCol(newSortCol);
   }
 
-  // Handler function to close an alert
+   // Handler function to close an alert
   function handleCloseAlert(index) {
     const updatedAlerts = [...alertList];
     updatedAlerts.splice(index, 1);
     setAlertList(updatedAlerts);
   }
-
   // Handler function to add an alert
   function addAlert(title, type) {
     const newAlert = { title, type };
     setAlertList([...alertList, newAlert]);
   }
+  function handleEdit(itemId) {
+    navigate(`/teams/edit-team/${itemId}`);
+  }
 
   return (
-    <div>
+    teamData && (<div>
+      
       <AlertList alerts={alertList} onAlertClose={handleCloseAlert} />
+      <SearchBar onSearchHandler={onSearchHandler} />
       <div className="d-flex justify-content-between align-items-center m-1">
         <h2>Teams</h2>
-        <button className="btn btn-primary float-end">
-          Add New Team
-        </button>
+        <AddTeamButton></AddTeamButton>
       </div>
       <TeamsTable
         teams={teamData}
-        sortCol={model.sortCol}
-        sortDir={model.sortDir}
+        sortCol={api.sortCol}
+        sortDir={api.sortDir}
         viewModel={viewModel}
         onHandleDelete={handleDelete}
         onHandleSort={handleSort}
+        onHandleEdit={handleEdit}
       />
 
       <Button
@@ -80,7 +103,7 @@ function TeamListView({ viewModel, model }) {
       >
         Clear
       </Button>
-    </div>
+    </div>)
   );
 }
 
